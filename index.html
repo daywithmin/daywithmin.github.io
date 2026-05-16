@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <title>Changmin Ji — Architectural Portfolio</title>
+    <meta name="description" content="Architectural Design Portfolio by Changmin Ji. Featuring computational design and selected works.">
+    <meta name="keywords" content="Architecture, Portfolio, Design, Computational Design, Changmin Ji">
+    
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/daywithmin/daywithmin.github.io/main/favicon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #0f1115;
+            --bg-control: rgba(23, 26, 33, 0.85);
+            --text-main: #ffffff;
+            --text-muted: #9ca3af;
+            --border: rgba(255, 255, 255, 0.06);
+            --accent: #ffffff;
+            --font-global: 'Inter', system-ui, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* [Windows 버그 수정] 데스크톱 레이아웃 붕괴를 일으키던 fixed 및 fill-available 제거 */
+        body {
+            font-family: var(--font-global);
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            width: 100%;
+            height: 100vh;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; 
+        }
+
+        /* 🔒 비밀번호 잠금 오버레이 스크린 */
+        #gatekeeper-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #0f1115;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+
+        .secure-box {
+            text-align: center;
+            max-width: 360px; 
+            width: 100%;
+            padding: 2rem;
+        }
+
+        .secure-box h2 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .secure-box p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            white-space: nowrap; 
+        }
+
+        .password-field {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: #fff;
+            text-align: center;
+            font-size: 0.9rem;
+            letter-spacing: 0.2em;
+            outline: none;
+            margin-bottom: 1rem;
+            transition: border-color 0.2s;
+            -webkit-appearance: none;
+        }
+
+        .password-field:focus {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .error-msg {
+            color: #ef4444;
+            font-size: 0.75rem;
+            height: 1rem;
+            margin-top: -0.5rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        /* TOP BAR */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: linear-gradient(to bottom, rgba(15, 17, 21, 1), rgba(15, 17, 21, 0));
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        header * { pointer-events: auto; }
+
+        .logo h1 {
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .btn-download {
+            background: #ffffff;
+            color: #0f1115;
+            font-weight: 600;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: background-color 0.15s ease, transform 0.15s ease;
+        }
+
+        .btn-download:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+
+        /* MAIN CONTENTS AREA */
+        .viewport-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 7rem 2rem 17rem; 
+            position: relative;
+            background: radial-gradient(circle, #1a1d24 0%, #0f1115 100%);
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            touch-action: none; /* 모바일 브라우저 시트 밀림 방지를 이쪽으로 격리 */
+        }
+
+        /* 🖐️ Pan & Drag 브라우저 가상 도면 뷰포트 상자 */
+        .canvas-wrapper {
+            box-shadow: 0 40px 90px rgba(0, 0, 0, 0.8);
+            background: #ffffff;
+            border-radius: 4px;
+            overflow: hidden;
+            transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .canvas-wrapper:active {
+            cursor: grabbing;
+        }
+
+        #pdf-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        /* 📥 하단 통합 시스템 바 바닥 고정 */
+        .bottom-system-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(15, 17, 21, 0.85);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 20;
+            padding: 1.2rem 2rem 1.2rem;
+            gap: 0.8rem;
+        }
+
+        /* 콘솔 제어 허브 컨테이너 */
+        .console-hub {
+            width: 100%;
+            max-width: 720px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        /* 공통 커스텀 슬라이더 스타일 */
+        .console-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .console-slider:hover { background: rgba(255, 255, 255, 0.2); }
+        .console-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: grab;
+            box-shadow: 0 0 6px rgba(0,0,0,0.5);
+        }
+
+        /* 슬래시를 축으로 한 완벽한 1:1 데드 센터 정렬 프레임 */
+        .page-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.25rem 0.5rem; 
+            border-radius: 4px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.2rem;
+            gap: 0.35rem; 
+        }
+
+        .custom-spinner-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-input {
+            width: 16px; 
+            height: 18px;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-family: var(--font-global);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center; 
+            outline: none;
+            margin: 0;
+            padding: 0;
+            -moz-appearance: textfield; 
+            -webkit-appearance: none;
+        }
+
+        .page-input::-webkit-outer-spin-button,
+        .page-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .total-pages-span {
+            display: inline-block;
+            width: 16px; 
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* 메인 Prev ~ Next 트랙 */
+        .controls-bar {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            background: transparent;
+            border: none;
+            padding: 0.1rem 0;
+            gap: 1.5rem;
+        }
+
+        .btn {
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-family: var(--font-global);
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.45rem 0.2rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .btn:hover { color: var(--text-muted); }
+
+        .page-slider-flex {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 줌 컨트롤 트랙 */
+        .zoom-slider-row {
+            width: 100%;
+            max-width: 240px; 
+            display: flex;
+            align-items: center;
+            background: transparent;
+            border: none;
+            padding: 0.2rem 0;
+            gap: 1rem;
+            margin-top: 0.3rem;
+        }
+
+        .zoom-slider-row .console-slider {
+            height: 2px;
+        }
+        .zoom-slider-row .console-slider::-webkit-slider-thumb {
+            width: 8px;
+            height: 8px;
+        }
+
+        .zoom-action-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.05rem; 
+            font-weight: 400;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: color 0.15s;
+            line-height: 1;
+        }
+        .zoom-action-btn:hover { color: var(--text-main); }
+
+        /* 타이포그래피 정렬 저작권 푸터 */
+        footer {
+            width: 100%;
+            text-align: center;
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.18);
+            letter-spacing: 0.04em;
+            line-height: 1.5;
+            margin-top: 0.2rem;
+        }
+
+        .footer-alert {
+            display: block;
+            margin-top: 0.1rem;
+            color: rgba(255, 255, 255, 0.1);
+            font-weight: 400;
+        }
+
+        @media (max-width: 768px) {
+            header { padding: 1rem; }
+            .logo h1 { font-size: 0.85rem; }
+            .btn-download { padding: 0.5rem 0.9rem; font-size: 0.75rem; }
+            .viewport-container { padding: 5.5rem 1rem 15rem; }
+            .bottom-system-container { padding: 1rem 1rem 1.5rem; gap: 0.6rem; }
+            .controls-bar { gap: 0.8rem; }
+            .btn { font-size: 0.68rem; }
+            .zoom-slider-row { max-width: 180px; }
+            .secure-box p { white-space: normal; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="gatekeeper-overlay">
+        <div class="secure-box">
+            <h2>Secure Access</h2>
+            <p>Please enter the password to view the portfolio.</p>
+            <input 
+                type="password" 
+                id="password-input" 
+                class="password-field" 
+                placeholder="••••"
+                onkeydown="if(event.key==='Enter') checkPassword()"
+            >
+            <div id="error-message" class="error-msg">Incorrect password. Please try again.</div>
+        </div>
+    </div>
+
+    <header>
+        <div class="logo">
+            <h1>Changmin Ji</h1>
+        </div>
+        <div>
+            <a id="download-btn" href="#" class="btn-download" download>Download PDF</a>
+        </div>
+    </header>
+
+    <main class="viewport-container" id="viewport">
+        <div class="canvas-wrapper" id="canvas-wrapper">
+            <canvas id="pdf-canvas"></canvas>
+        </div>
+    </main>
+
+    <div class="bottom-system-container">
+        
+        <div class="console-hub">
+            
+            <div class="page-selector">
+                <div class="custom-spinner-wrapper">
+                    <input 
+                        type="number" 
+                        id="page-input" 
+                        class="page-input" 
+                        value="1" 
+                        min="1"
+                        onkeydown="if(event.key==='Enter') { this.blur(); goToPage(this.value); }"
+                        onblur="goToPage(this.value)"
+                    >
+                </div>
+                <span>/</span>
+                <span id="total-pages" class="total-pages-span">00</span>
+            </div>
+
+            <div class="controls-bar">
+                <button class="btn" onclick="prevPage()">Prev</button>
+
+                <div class="page-slider-flex">
+                    <input 
+                        type="range" 
+                        id="page-slider" 
+                        class="console-slider" 
+                        min="1" 
+                        max="1" 
+                        value="1"
+                        oninput="goToPage(this.value)"
+                    >
+                </div>
+
+                <button class="btn" onclick="nextPage()">Next</button>
+            </div>
+
+            <div class="zoom-slider-row">
+                <button class="zoom-action-btn" onclick="zoomStepDown()">−</button>
+                <input 
+                    type="range" 
+                    id="zoom-slider" 
+                    class="console-slider" 
+                    min="50" 
+                    max="250" 
+                    value="100"
+                    oninput="handleZoomSlider(this.value)"
+                >
+                <button class="zoom-action-btn" onclick="zoomStepUp()">+</button>
+            </div>
+            
+        </div>
+
+        <footer>
+            © 2026 Changmin Ji. All rights reserved.
+            <span class="footer-alert">Unauthorized duplication or distribution is prohibited.</span>
+        </footer>
+    </div>
+
+    <script>
+        const SECURE_PASSWORD = "2026";
+
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        let pdfDoc = null;
+        let currentPage = 1;
+        let currentZoomLevel = 1.0; 
+
+        const canvas = document.getElementById('pdf-canvas');
+        const wrapper = document.getElementById('canvas-wrapper');
+        const ctx = canvas.getContext('2d');
+        const viewportContainer = document.getElementById('viewport');
+        
+        const pageInput = document.getElementById('page-input');
+        const pageSlider = document.getElementById('page-slider');
+        const totalPagesSpan = document.getElementById('total-pages');
+        const downloadBtn = document.getElementById('download-btn');
+        const zoomSlider = document.getElementById('zoom-slider');
+
+        let isDragging = false;
+        let startX, startY;
+        let currentX = 0, currentY = 0;
+
+        function checkPassword() {
+            const inputField = document.getElementById('password-input');
+            const errorMsg = document.getElementById('error-message');
+            const overlay = document.getElementById('gatekeeper-overlay');
+
+            if (inputField.value === SECURE_PASSWORD) {
+                inputField.blur(); 
+                overlay.style.opacity = '0';
+                overlay.style.transform = 'scale(1.02)';
+                
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    loadPortfolioPDF();
+                    initPanEngine();
+                    initMouseWheelZoomEngine();
+                }, 350);
+            } else {
+                errorMsg.style.display = 'block';
+                inputField.value = '';
+                inputField.focus();
+            }
+        }
+
+        async function renderPage(num) {
+            if (!pdfDoc) return;
+
+            if (num < 1) num = 1;
+            if (num > pdfDoc.numPages) num = pdfDoc.numPages;
+
+            const page = await pdfDoc.getPage(num);
+            const containerWidth = window.innerWidth - 40; 
+            const containerHeight = window.innerHeight - 250; 
+
+            const unscaledViewport = page.getViewport({ scale: 1.0 });
+            const scaleX = containerWidth / unscaledViewport.width;
+            const scaleY = containerHeight / unscaledViewport.height;
+            
+            let optimalScale = Math.min(scaleX, scaleY);
+            optimalScale = Math.max(optimalScale, 0.3);
+
+            const dpr = window.devicePixelRatio || 1;
+            const finalRenderScale = optimalScale * dpr;
+            const viewport = page.getViewport({ scale: finalRenderScale });
+
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            wrapper.style.width = `${viewport.width / dpr}px`;
+            wrapper.style.height = `${viewport.height / dpr}px`;
+
+            const renderContext = { canvasContext: ctx, viewport: viewport };
+            await page.render(renderContext).promise;
+
+            currentPage = num;
+            pageInput.value = num;
+            pageSlider.value = num;
+            totalPagesSpan.textContent = String(pdfDoc.numPages).padStart(2, '0');
+            
+            resetPanPosition();
+        }
+
+        function goToPage(value) {
+            const pageNum = parseInt(value);
+            if (!isNaN(pageNum) && pdfDoc) {
+                renderPage(pageNum);
+            } else {
+                pageInput.value = currentPage;
+                pageSlider.value = currentPage;
+            }
+        }
+
+        function applyZoomAndCenter() {
+            zoomSlider.value = Math.round(currentZoomLevel * 100);
+            wrapper.style.transform = `translate(-50%, -50%) translate(${currentX}px, ${currentY}px) scale(${currentZoomLevel})`;
+        }
+
+        function handleZoomSlider(value) {
+            currentZoomLevel = parseInt(value) / 100;
+            applyZoomAndCenter();
+        }
+
+        function zoomStepUp() {
+            if (currentZoomLevel < 2.5) {
+                currentZoomLevel = Math.min(2.5, parseFloat((currentZoomLevel + 0.1).toFixed(2)));
+                applyZoomAndCenter();
+            }
+        }
+
+        function zoomStepDown() {
+            if (currentZoomLevel > 0.5) {
+                currentZoomLevel = Math.max(0.5, parseFloat((currentZoomLevel - 0.1).toFixed(2)));
+                applyZoomAndCenter();
+            }
+        }
+
+        function initMouseWheelZoomEngine() {
+            viewportContainer.addEventListener('wheel', function(e) {
+                e.preventDefault(); 
+                const zoomFactor = 0.05; 
+                if (e.deltaY < 0) {
+                    currentZoomLevel = Math.min(2.5, parseFloat((currentZoomLevel + zoomFactor).toFixed(2)));
+                } else {
+                    currentZoomLevel = Math.max(0.5, parseFloat((currentZoomLevel - zoomFactor).toFixed(2)));
+                }
+                applyZoomAndCenter();
+            }, { passive: false }); 
+        }
+
+        function initPanEngine() {
+            wrapper.addEventListener('mousedown', startDrag);
+            window.addEventListener('mousemove', dragMove);
+            window.addEventListener('mouseup', stopDrag);
+
+            wrapper.addEventListener('touchstart', startDrag, { passive: false });
+            window.addEventListener('touchmove', dragMove, { passive: false });
+            window.addEventListener('touchend', stopDrag);
+        }
+
+        function startDrag(e) {
+            isDragging = true;
+            const pageX = e.touches ? e.touches[0].pageX : e.pageX;
+            const pageY = e.touches ? e.touches[0].pageY : e.pageY;
+            
+            startX = pageX - currentX;
+            startY = pageY - currentY;
+        }
+
+        function dragMove(e) {
+            if (!isDragging) return;
+            
+            const pageX = e.touches ? e.touches[0].pageX : e.pageX;
+            const pageY = e.touches ? e.touches[0].pageY : e.pageY;
+            
+            currentX = pageX - startX;
+            currentY = pageY - startY;
+
+            wrapper.style.transform = `translate(-50%, -50%) translate(${currentX}px, ${currentY}px) scale(${currentZoomLevel})`;
+        }
+
+        function stopDrag() {
+            isDragging = false;
+        }
+
+        function resetPanPosition() {
+            currentX = 0;
+            currentY = 0;
+            wrapper.style.transform = `translate(-50%, -50%) scale(${currentZoomLevel})`;
+        }
+
+        function prevPage() { if (currentPage > 1) renderPage(currentPage - 1); }
+        function nextPage() { if (pdfDoc && currentPage < pdfDoc.numPages) renderPage(currentPage + 1); }
+
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (pdfDoc && document.getElementById('gatekeeper-overlay').style.display === 'none') {
+                    renderPage(currentPage);
+                }
+            }, 200);
+        });
+
+        async function loadPortfolioPDF() {
+            const pdfUrl = "https://raw.githubusercontent.com/daywithmin/daywithmin.github.io/main/portfolio.pdf";
+            try {
+                pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
+                pageSlider.max = pdfDoc.numPages;
+                await renderPage(1);
+                downloadBtn.href = pdfUrl;
+            } catch (e) {
+                console.error("PDF Loading Error: ", e);
+                alert("포트폴리오 파일을 불러오지 못했습니다.");
+            }
+        }
+
+        window.onload = function() {
+            document.getElementById('password-input').focus();
+        };
+    </script>
+</body>
+</html>
