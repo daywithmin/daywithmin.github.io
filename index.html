@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changmin Ji — Computational Designer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        :root {
+            --primary: #00f5ff;
+            --text: #e0f2fe;
+            --bg: #0a0a0a;
+        }
+       
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+       
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+       
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(10,10,10,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #1f2937;
+            padding: 1.2rem 2rem;
+        }
+       
+        .logo {
+            font-size: 1.45rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+       
+        .main-container {
+            padding-top: 80px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+       
+        h1 {
+            text-align: center;
+            font-size: 2.8rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+       
+        .pdf-viewer {
+            background: #111827;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 245, 255, 0.1);
+            border: 1px solid #1f2937;
+            margin: 0 2rem;
+        }
+       
+        .viewer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+       
+        .pdf-container {
+            background: #0f172a;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+       
+        #pdf-canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 78vh;
+        }
+       
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 1.8rem;
+            flex-wrap: wrap;
+        }
+       
+        .controls button {
+            padding: 12px 24px;
+            background: #1f2937;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+       
+        .controls button:hover {
+            background: var(--primary);
+            color: #000;
+        }
+       
+        .page-info {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #94a3b8;
+        }
+       
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            opacity: 0.7;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Changmin Ji</div>
+    </header>
+
+    <div class="main-container">
+        <h1>Portfolio 2026</h1>
+        
+        <div class="pdf-viewer">
+            <div class="viewer-header">
+                <h3>Changmin Ji — Computational Design Portfolio.pdf</h3>
+                <div class="page-info" id="page-info">1 / 1</div>
+            </div>
+           
+            <div class="pdf-container">
+                <canvas id="pdf-canvas"></canvas>
+            </div>
+           
+            <div class="controls">
+                <button onclick="firstPage()">First</button>
+                <button onclick="prevPage()">Prev</button>
+                <button onclick="nextPage()">Next</button>
+                <button onclick="lastPage()">Last</button>
+                <a id="download-btn" href="#" class="btn" style="padding:12px 28px;">Download PDF</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Changmin Ji • Computational Designer</p>
+    </footer>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+       
+        let pdfDoc = null;
+        let currentPage = 1;
+        let scale = 1.65;
+       
+        const canvas = document.getElementById('pdf-canvas');
+        const ctx = canvas.getContext('2d');
+        const pageInfo = document.getElementById('page-info');
+        const downloadBtn = document.getElementById('download-btn');
+
+        async function renderPage(num) {
+            if (!pdfDoc) return;
+            const page = await pdfDoc.getPage(num);
+            const viewport = page.getViewport({ scale: scale });
+           
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+           
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+            pageInfo.textContent = `${num} / ${pdfDoc.numPages}`;
+            currentPage = num;
+        }
+
+        function firstPage() { if(pdfDoc) renderPage(1); }
+        function lastPage() { if(pdfDoc) renderPage(pdfDoc.numPages); }
+        function prevPage() { if(currentPage > 1) renderPage(currentPage-1); }
+        function nextPage() { if(pdfDoc && currentPage < pdfDoc.numPages) renderPage(currentPage+1); }
+
+        async function loadPortfolioPDF() {
+            const pdfUrl = "https://raw.githubusercontent.com/daywithmin/daywithmin.github.io/main/portfolio.pdf";
+            // ↑ 여기를 당신의 실제 PDF raw URL로 변경하세요
+            
+            try {
+                pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
+                await renderPage(1);
+                downloadBtn.href = pdfUrl;
+            } catch (e) {
+                console.error("PDF Load Error", e);
+                alert("PDF를 불러올 수 없습니다. URL을 확인해주세요.");
+            }
+        }
+
+        window.onload = loadPortfolioPDF;
+    </script>
+</body>
+</html>
