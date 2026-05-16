@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio | [Your Name]</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8fafc;
+        }
+        
+        header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+        }
+        
+        nav {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1.2rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
+        
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://picsum.photos/1920/1080') center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+        }
+        
+        .hero-content {
+            max-width: 700px;
+            padding: 2rem;
+        }
+        
+        .hero h1 {
+            font-size: 3.2rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.35rem;
+            margin-bottom: 2rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            margin: 0 8px;
+        }
+        
+        section {
+            padding: 80px 2rem;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        
+        h2 {
+            text-align: center;
+            font-size: 2.4rem;
+            margin-bottom: 3rem;
+        }
+        
+        .pdf-viewer {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 2rem auto;
+        }
+        
+        .viewer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .pdf-container {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        #pdf-canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            max-height: 75vh;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 1.2rem;
+            flex-wrap: wrap;
+        }
+        
+        .controls button {
+            padding: 10px 18px;
+            background: #334155;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .controls button:hover {
+            background: var(--primary);
+        }
+        
+        .page-info {
+            font-weight: 600;
+            color: #64748b;
+            margin: 0 15px;
+        }
+        
+        footer {
+            background: #1e2937;
+            color: white;
+            text-align: center;
+            padding: 2.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav>
+            <div class="logo">Portfolio</div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Hi, I'm [Your Full Name]</h1>
+            <p>[Your Job Title] • UI/UX Designer &amp; Frontend Developer</p>
+            <a href="#portfolio" class="btn">View Portfolio</a>
+        </div>
+    </section>
+
+    <!-- PDF Portfolio -->
+    <section id="portfolio">
+        <h2>Portfolio</h2>
+        <div class="pdf-viewer">
+            <div class="viewer-header">
+                <h3>Portfolio.pdf</h3>
+                <div class="page-info" id="page-info">1 / 1</div>
+            </div>
+            
+            <div class="pdf-container">
+                <canvas id="pdf-canvas"></canvas>
+            </div>
+            
+            <div class="controls">
+                <button onclick="firstPage()">First</button>
+                <button onclick="prevPage()">Previous</button>
+                <button onclick="nextPage()">Next</button>
+                <button onclick="lastPage()">Last</button>
+                <a id="download-btn" href="#" class="btn" style="background:#10b981; padding:10px 20px;">Download PDF</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 [Your Full Name]. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        let pdfDoc = null;
+        let currentPage = 1;
+        let scale = 1.6;
+        
+        const canvas = document.getElementById('pdf-canvas');
+        const ctx = canvas.getContext('2d');
+        const pageInfo = document.getElementById('page-info');
+        const downloadBtn = document.getElementById('download-btn');
+
+        async function renderPage(num) {
+            if (!pdfDoc) return;
+            const page = await pdfDoc.getPage(num);
+            const viewport = page.getViewport({ scale: scale });
+            
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+            pageInfo.textContent = `${num} / ${pdfDoc.numPages}`;
+            currentPage = num;
+        }
+
+        function firstPage() { if (pdfDoc) renderPage(1); }
+        function lastPage() { if (pdfDoc) renderPage(pdfDoc.numPages); }
+        function prevPage() { if (currentPage > 1) renderPage(currentPage - 1); }
+        function nextPage() { if (pdfDoc && currentPage < pdfDoc.numPages) renderPage(currentPage + 1); }
+
+        // PDF 미리 로드 (여기 URL을 당신 PDF 링크로 바꾸세요)
+        async function loadDefaultPDF() {
+            const pdfUrl = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"; 
+            // ↑ 위 URL을 당신의 실제 PDF 공개 링크로 변경하세요
+            
+            try {
+                pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
+                renderPage(1);
+                downloadBtn.href = pdfUrl;
+            } catch (e) {
+                console.log("Failed to load default PDF");
+            }
+        }
+
+        window.onload = loadDefaultPDF;
+    </script>
+</body>
+</html>
