@@ -3,154 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio | [Your Name]</title>
+    <title>Chanmgnin Ji — Computational Designer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
         :root {
-            --primary: #2563eb;
+            --primary: #00f5ff;
+            --text: #e0f2fe;
+            --bg: #0a0a0a;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             line-height: 1.6;
-            color: #333;
-            background: #f8fafc;
+            overflow-x: hidden;
         }
         
         header {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             position: fixed;
+            top: 0;
             width: 100%;
             z-index: 1000;
+            background: rgba(10,10,10,0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #1f2937;
         }
         
         nav {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 1.2rem 2rem;
+            padding: 1.4rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
-        .logo { font-size: 1.6rem; font-weight: 800; color: var(--primary); }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
         
         .hero {
             height: 100vh;
-            background: linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)), url('https://picsum.photos/1920/1080') center/cover;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            color: white;
+            position: relative;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at center, rgba(0,245,255,0.08) 0%, transparent 70%);
         }
         
         .hero-content {
-            max-width: 700px;
-            padding: 2rem;
+            max-width: 800px;
+            z-index: 2;
         }
         
         .hero h1 {
-            font-size: 3.2rem;
+            font-size: 4.2rem;
+            font-weight: 700;
+            letter-spacing: -2px;
             margin-bottom: 1rem;
+            line-height: 1.1;
         }
         
-        .hero p {
-            font-size: 1.35rem;
-            margin-bottom: 2rem;
+        .hero .subtitle {
+            font-size: 1.45rem;
+            opacity: 0.9;
+            margin-bottom: 2.5rem;
         }
         
         .btn {
-            display: inline-block;
-            padding: 14px 32px;
-            background: var(--primary);
+            padding: 14px 36px;
+            background: transparent;
             color: white;
-            text-decoration: none;
+            border: 1px solid var(--primary);
             border-radius: 50px;
-            font-weight: 600;
-            margin: 0 8px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: var(--primary);
+            color: #000;
+            transform: translateY(-2px);
         }
         
         section {
-            padding: 80px 2rem;
+            padding: 100px 2rem;
             max-width: 1100px;
             margin: 0 auto;
         }
         
         h2 {
+            font-size: 2.8rem;
             text-align: center;
-            font-size: 2.4rem;
-            margin-bottom: 3rem;
+            margin-bottom: 4rem;
+            font-weight: 600;
         }
         
         .pdf-viewer {
-            background: white;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin: 2rem auto;
+            background: #111827;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 245, 255, 0.1);
+            border: 1px solid #1f2937;
         }
         
         .viewer-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
+            margin-bottom: 1.5rem;
         }
         
         .pdf-container {
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
+            background: #0f172a;
+            border-radius: 12px;
             overflow: hidden;
+            border: 1px solid #334155;
         }
         
         #pdf-canvas {
             width: 100%;
             height: auto;
             display: block;
-            margin: 0 auto;
-            max-height: 75vh;
         }
         
         .controls {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-top: 1.2rem;
+            gap: 12px;
+            margin-top: 1.8rem;
             flex-wrap: wrap;
         }
         
         .controls button {
-            padding: 10px 18px;
-            background: #334155;
+            padding: 12px 24px;
+            background: #1f2937;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-size: 1rem;
+            transition: 0.3s;
         }
         
         .controls button:hover {
             background: var(--primary);
+            color: #000;
         }
         
         .page-info {
-            font-weight: 600;
-            color: #64748b;
-            margin: 0 15px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #94a3b8;
         }
         
         footer {
-            background: #1e2937;
-            color: white;
             text-align: center;
-            padding: 2.5rem;
+            padding: 3rem;
+            opacity: 0.7;
+            font-size: 0.95rem;
         }
     </style>
 </head>
@@ -158,24 +182,24 @@
 
     <header>
         <nav>
-            <div class="logo">Portfolio</div>
+            <div class="logo">Seongmin Kim</div>
         </nav>
     </header>
 
     <section class="hero">
         <div class="hero-content">
-            <h1>Hi, I'm [Your Full Name]</h1>
-            <p>[Your Job Title] • UI/UX Designer &amp; Frontend Developer</p>
+            <h1>Computational<br>Designer</h1>
+            <p class="subtitle">Creating systems between code and aesthetics</p>
             <a href="#portfolio" class="btn">View Portfolio</a>
         </div>
     </section>
 
-    <!-- PDF Portfolio -->
+    <!-- Portfolio PDF -->
     <section id="portfolio">
-        <h2>Portfolio</h2>
+        <h2>Portfolio 2026</h2>
         <div class="pdf-viewer">
             <div class="viewer-header">
-                <h3>Portfolio.pdf</h3>
+                <h3>Seongmin Kim — Computational Design Portfolio.pdf</h3>
                 <div class="page-info" id="page-info">1 / 1</div>
             </div>
             
@@ -185,16 +209,16 @@
             
             <div class="controls">
                 <button onclick="firstPage()">First</button>
-                <button onclick="prevPage()">Previous</button>
+                <button onclick="prevPage()">Prev</button>
                 <button onclick="nextPage()">Next</button>
                 <button onclick="lastPage()">Last</button>
-                <a id="download-btn" href="#" class="btn" style="background:#10b981; padding:10px 20px;">Download PDF</a>
+                <a id="download-btn" href="#" class="btn" style="padding:12px 28px;">Download PDF</a>
             </div>
         </div>
     </section>
 
     <footer>
-        <p>&copy; 2026 [Your Full Name]. All Rights Reserved.</p>
+        <p>© 2026 Seongmin Kim • Computational Designer</p>
     </footer>
 
     <script>
@@ -202,7 +226,7 @@
         
         let pdfDoc = null;
         let currentPage = 1;
-        let scale = 1.6;
+        let scale = 1.65;
         
         const canvas = document.getElementById('pdf-canvas');
         const ctx = canvas.getContext('2d');
@@ -222,26 +246,27 @@
             currentPage = num;
         }
 
-        function firstPage() { if (pdfDoc) renderPage(1); }
-        function lastPage() { if (pdfDoc) renderPage(pdfDoc.numPages); }
-        function prevPage() { if (currentPage > 1) renderPage(currentPage - 1); }
-        function nextPage() { if (pdfDoc && currentPage < pdfDoc.numPages) renderPage(currentPage + 1); }
+        function firstPage() { if(pdfDoc) renderPage(1); }
+        function lastPage() { if(pdfDoc) renderPage(pdfDoc.numPages); }
+        function prevPage() { if(currentPage > 1) renderPage(currentPage-1); }
+        function nextPage() { if(pdfDoc && currentPage < pdfDoc.numPages) renderPage(currentPage+1); }
 
-        // PDF 미리 로드 (여기 URL을 당신 PDF 링크로 바꾸세요)
-        async function loadDefaultPDF() {
-            const pdfUrl = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"; 
-            // ↑ 위 URL을 당신의 실제 PDF 공개 링크로 변경하세요
+        // ←←← 여기만 바꾸세요
+        async function loadPortfolioPDF() {
+            const pdfUrl = "https://raw.githubusercontent.com/daywithmin/daywithmin.github.io/main/YourPortfolio.pdf"; 
+            // ↑ 위 URL을 당신의 실제 PDF raw 링크로 변경
             
             try {
                 pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
-                renderPage(1);
+                await renderPage(1);
                 downloadBtn.href = pdfUrl;
             } catch (e) {
-                console.log("Failed to load default PDF");
+                console.error("PDF Load Error", e);
+                alert("PDF를 불러올 수 없습니다. URL을 확인해주세요.");
             }
         }
 
-        window.onload = loadDefaultPDF;
+        window.onload = loadPortfolioPDF;
     </script>
 </body>
 </html>
