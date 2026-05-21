@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <title>Changmin Ji — Architectural Portfolio</title>
+    <meta name="description" content="Architectural Design Portfolio by Changmin Ji. Featuring computational design and selected works.">
+    <meta name="keywords" content="Architecture, Portfolio, Design, Computational Design, Changmin Ji">
+    
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/daywithmin/daywithmin.github.io/main/favicon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <style>
+        /* ----------------------------------------------------
+         * 2단계: 표면 입히기 (Design System Tokens)
+         * ---------------------------------------------------- */
+        :root {
+            /* Color Palettes */
+            --clr-bg-main: #0f1115;
+            --clr-bg-surface: rgba(23, 26, 33, 0.85);
+            --clr-bg-surface-elevated: rgba(255, 255, 255, 0.05);
+            --clr-text-main: #ffffff;
+            --clr-text-muted: #9ca3af;
+            --clr-border: rgba(255, 255, 255, 0.06);
+            --clr-accent: #ffffff;
+            --clr-accent-hover: #e2e8f0;
+            --clr-danger: #ef4444;
+
+            /* Typography & Layout Rules */
+            --font-global: 'Inter', system-ui, sans-serif;
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --transition-smooth: all 0.15s ease;
+            --transition-overlay: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        /* ----------------------------------------------------
+         * Global Styles
+         * ---------------------------------------------------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-global);
+            background-color: var(--clr-bg-main);
+            color: var(--clr-text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        body.unlocked {
+            overflow: auto;
+        }
+
+        /* ----------------------------------------------------
+         * Components: Gatekeeper Overlay (보안 스크린)
+         * ---------------------------------------------------- */
+        #gatekeeper-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--clr-bg-main);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: var(--transition-overlay);
+        }
+
+        .secure-box {
+            text-align: center;
+            max-width: 360px; 
+            width: 100%;
+            padding: 2rem;
+        }
+
+        .secure-box h2 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .secure-box p {
+            font-size: 0.8rem;
+            color: var(--clr-text-muted);
+            margin-bottom: 1.5rem;
+            white-space: nowrap; 
+        }
+
+        .password-field {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--clr-bg-surface-elevated);
+            border: 1px solid var(--clr-border);
+            border-radius: var(--radius-md);
+            color: var(--clr-text-main);
+            text-align: center;
+            font-size: 0.9rem;
+            letter-spacing: 0.2em;
+            outline: none;
+            margin-bottom: 0.75rem;
+            transition: border-color var(--transition-smooth);
+        }
+
+        .password-field:focus {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--clr-accent);
+            color: var(--clr-bg-main);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            margin-bottom: 1rem;
+            transition: opacity var(--transition-smooth);
+        }
+
+        .btn-submit:hover, .btn-submit:active {
+            opacity: 0.9;
+        }
+
+        .error-msg {
+            color: var(--clr-danger);
+            font-size: 0.75rem;
+            height: 1rem;
+            margin-top: -0.25rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        /* ----------------------------------------------------
+         * Components: Header Area
+         * ---------------------------------------------------- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: linear-gradient(to bottom, var(--clr-bg-main), rgba(15, 17, 21, 0));
+            position: fixed;
+            top: 0; width: 100%; z-index: 10;
+            pointer-events: none;
+            transition: transform 0.3s ease;
+        }
+
+        header * { pointer-events: auto; }
+
+        .logo h1 {
+            font-size: 0.95rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .btn-download {
+            background: var(--clr-accent);
+            color: var(--clr-bg-main);
+            font-weight: 600;
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-size: 0.85rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transition: var(--transition-smooth);
+        }
+
+        .btn-download:hover {
+            background: var(--clr-accent-hover);
+            transform: translateY(-1px);
+        }
+
+        /* ----------------------------------------------------
+         * Components: Viewport Canvas Canvas
+         * ---------------------------------------------------- */
+        .viewport-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 7rem 2rem 14rem; 
+            position: relative;
+            background: radial-gradient(circle, #1a1d24 0%, var(--clr-bg-main) 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .canvas-wrapper {
+            box-shadow: 0 40px 90px rgba(0, 0, 0, 0.8);
+            background: #ffffff;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            transform-origin: center center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            position: absolute;
+            top: 46%; left: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            cursor: grab;
+            user-select: none;
+        }
+
+        .canvas-wrapper:active {
+            cursor: grabbing;
+        }
+
+        #pdf-canvas {
+            display: block;
+            width: 100%; height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        /* ----------------------------------------------------
+         * Components: Bottom System Controller Bar
+         * ---------------------------------------------------- */
+        .bottom-system-container {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            background: rgba(15, 17, 21, 0.85);
+            backdrop-filter: blur(30px);
+            border-top: 1px solid var(--clr-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 20;
+            padding: 1.2rem 2rem; 
+            transition: transform 0.3s ease;
+        }
+
+        .console-hub {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .page-selector-zone {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .page-selector {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--clr-border);
+            padding: 0.35rem 0.6rem; 
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            color: var(--clr-text-muted);
+            gap: 0.35rem; 
+            min-width: 75px;
+            justify-content: center;
+        }
+
+        .custom-spinner-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .page-input {
+            width: 18px; height: 18px;
+            background: transparent;
+            border: none;
+            color: var(--clr-text-main);
+            font-family: var(--font-global);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-align: center; 
+            outline: none;
+            margin: 0; padding: 0;
+            -moz-appearance: textfield; 
+        }
+
+        .page-input::-webkit-outer-spin-button,
+        .page-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .total-pages-span {
+            display: inline-block;
+            width: 18px; 
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .controls-bar {
+            width: 80vw;
+            max-width: 1200px;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .btn {
+            background: transparent;
+            border: none;
+            color: var(--clr-text-main);
+            font-family: var(--font-global);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.45rem 0.6rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            flex-shrink: 0;
+        }
+        .btn:hover { color: var(--clr-text-muted); }
+
+        .page-slider-flex {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .console-slider {
+            -webkit-appearance: none;
+            width: 100%; height: 3px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .console-slider:hover { background: rgba(255, 255, 255, 0.2); }
+        .console-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--clr-accent);
+            cursor: grab;
+            box-shadow: 0 0 6px rgba(0,0,0,0.5);
+        }
+
+        .fullscreen-action-zone {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-system-fullscreen {
+            background: transparent;
+            border: 1px solid var(--clr-border);
+            color: var(--clr-text-main);
+            font-family: var(--font-global);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 0.45rem 0.85rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            white-space: nowrap;
+        }
+        
+        .btn-system-fullscreen:hover {
+            background: var(--clr-bg-surface-elevated);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        footer {
+            width: 100%;
+            text-align: center;
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.18);
+            letter-spacing: 0.04em;
+            line-height: 1.5;
+            margin-top: 0.5rem;
+            transition: opacity 0.2s ease;
+        }
+
+        .footer-alert {
+            display: block;
+            margin-top: 0.1rem;
+            color: rgba(255, 255, 255, 0.1);
+            font-weight: 400;
+        }
+
+        /* Fullscreen Polyfill Mode Styles */
+        :-webkit-full-screen .viewport-container { padding: 0; }
+        :-ms-fullscreen .viewport-container { padding: 0; }
+        :fullscreen .viewport-container { padding: 0; }
+
+        body.fullscreen-mode header { transform: translateY(-100%); }
+        body.fullscreen-mode .bottom-system-container { background: rgba(15, 17, 21, 0.95); padding-bottom: 1.2rem; }
+        body.fullscreen-mode footer { display: none !important; }
+
+        /* Responsive Design Rules */
+        @media (max-width: 992px) {
+            .console-hub {
+                grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+                gap: 0.5rem;
+            }
+            header { padding: 1rem; }
+            .logo h1 { font-size: 0.85rem; }
+            .btn-download { padding: 0.5rem 0.9rem; font-size: 0.75rem; }
+            .viewport-container { padding: 6rem 1rem 12rem; }
+            .bottom-system-container { padding: 1rem 1.5rem; }
+            
+            .controls-bar {
+                flex: 1; width: auto; max-width: none;
+                margin: 0 0.2rem; gap: 0.5rem;
+            }
+            .page-selector { min-width: 65px; padding: 0.3rem 0.4rem; font-size: 0.75rem; }
+            .btn { font-size: 0.68rem; padding: 0.45rem 0.3rem; }
+            .btn-system-fullscreen { padding: 0.4rem 0.6rem; font-size: 0.68rem; }
+            .secure-box p { white-space: normal; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="gatekeeper-overlay">
+        <div class="secure-box">
+            <h2>Secure Access</h2>
+            <p>Please enter the password to view the portfolio.</p>
+            <input 
+                type="password" 
+                id="password-input" 
+                class="password-field" 
+                placeholder="••••"
+                onkeydown="if(event.key==='Enter') App.checkPassword()"
+            >
+            <button class="btn-submit" onclick="App.checkPassword()">ENTER</button>
+            <div id="error-message" class="error-msg">Incorrect password. Please try again.</div>
+        </div>
+    </div>
+
+    <header id="site-header">
+        <div class="logo">
+            <h1>Changmin Ji</h1>
+        </div>
+        <div class="header-actions">
+            <a id="download-btn" href="#" class="btn-download" download>Download PDF</a>
+        </div>
+    </header>
+
+    <main class="viewport-container" id="viewport">
+        <div class="canvas-wrapper" id="canvas-wrapper">
+            <canvas id="pdf-canvas"></canvas>
+        </div>
+    </main>
+
+    <div class="bottom-system-container" id="system-bar">
+        <div class="console-hub">
+            <div class="page-selector-zone">
+                <div class="page-selector">
+                    <div class="custom-spinner-wrapper">
+                        <input 
+                            type="number" 
+                            id="page-input" 
+                            class="page-input" 
+                            value="1" 
+                            min="1"
+                            onkeydown="if(event.key==='Enter') App.goToPage(this.value)"
+                            onblur="App.goToPage(this.value)"
+                        >
+                    </div>
+                    <span>/</span>
+                    <span id="total-pages" class="total-pages-span">00</span>
+                </div>
+            </div>
+
+            <div class="controls-bar">
+                <button class="btn" onclick="App.prevPage()">Prev</button>
+                <div class="page-slider-flex">
+                    <input 
+                        type="range" 
+                        id="page-slider" 
+                        class="console-slider" 
+                        min="1" max="1" value="1"
+                        oninput="App.goToPage(this.value)"
+                    >
+                </div>
+                <button class="btn" onclick="App.nextPage()">Next</button>
+            </div>
+
+            <div class="fullscreen-action-zone">
+                <button class="btn-system-fullscreen" id="fullscreen-toggle-btn" onclick="App.toggleFullscreen()">Fullscreen</button>
+            </div>
+        </div>
+
+        <footer>
+            © 2026 Changmin Ji. All rights reserved.
+            <span class="footer-alert">Unauthorized duplication or distribution is prohibited.</span>
+        </footer>
+    </div>
+
+    <script>
+        /* ====================================================
+         * 1단계: Headless UI (인터랙션/동작 로직 도구화)
+         * ==================================================== */
+        class ViewportInteractionEngine {
+            constructor(container, element) {
+                this.container = container;
+                this.element = element;
+                this.zoom = 1.0;
+                this.x = 0;
+                this.y = 0;
+                
+                // 드래그 및 터치 상태 상태관리 내부화
+                this.isDragging = false;
+                this.startX = 0; this.startY = 0;
+                this.startDistance = 0;
+                this.startZoom = 1.0;
+
+                this.setupMouseWheel();
+                this.setupPanAndPinch();
+            }
+
+            reset() {
+                this.x = 0; this.y = 0;
+                this.apply();
+            }
+
+            apply() {
+                this.element.style.transform = `translate(-50%, -50%) translate(${this.x}px, ${this.y}px) scale(${this.zoom})`;
+            }
+
+            setupMouseWheel() {
+                this.container.addEventListener('wheel', (e) => {
+                    if (!document.body.classList.contains('unlocked')) return;
+                    e.preventDefault();
+                    const factor = 0.05;
+                    if (e.deltaY < 0) {
+                        this.zoom = Math.min(2.5, parseFloat((this.zoom + factor).toFixed(2)));
+                    } else {
+                        this.zoom = Math.max(0.5, parseFloat((this.zoom - factor).toFixed(2)));
+                    }
+                    this.apply();
+                }, { passive: false });
+            }
+
+            setupPanAndPinch() {
+                // 데스크탑 드래그
+                this.element.addEventListener('mousedown', (e) => {
+                    if(e.touches) return;
+                    this.isDragging = true;
+                    this.startX = e.pageX - this.x;
+                    this.startY = e.pageY - this.y;
+                    e.preventDefault();
+                });
+
+                window.addEventListener('mousemove', (e) => {
+                    if (!this.isDragging || e.touches) return;
+                    this.x = e.pageX - this.startX;
+                    this.y = e.pageY - this.startY;
+                    this.apply();
+                });
+
+                window.addEventListener('mouseup', () => this.isDragging = false);
+
+                // 모바일 터치 및 핀치 줌
+                this.container.addEventListener('touchstart', (e) => {
+                    if (!document.body.classList.contains('unlocked')) return;
+                    if (e.touches.length === 1) {
+                        this.isDragging = true;
+                        this.startX = e.touches[0].pageX - this.x;
+                        this.startY = e.touches[0].pageY - this.y;
+                    } else if (e.touches.length === 2) {
+                        this.isDragging = false;
+                        this.startDistance = Math.hypot(
+                            e.touches[0].pageX - e.touches[1].pageX,
+                            e.touches[0].pageY - e.touches[1].pageY
+                        );
+                        this.startZoom = this.zoom;
+                    }
+                    e.preventDefault();
+                }, { passive: false });
+
+                this.container.addEventListener('touchmove', (e) => {
+                    if (!document.body.classList.contains('unlocked')) return;
+                    if (e.touches.length === 1 && this.isDragging) {
+                        this.x = e.touches[0].pageX - this.startX;
+                        this.y = e.touches[0].pageY - this.startY;
+                        this.apply();
+                    } else if (e.touches.length === 2 && this.startDistance > 0) {
+                        const distance = Math.hypot(
+                            e.touches[0].pageX - e.touches[1].pageX,
+                            e.touches[0].pageY - e.touches[1].pageY
+                        );
+                        let targetZoom = this.startZoom * (distance / this.startDistance);
+                        this.zoom = Math.max(0.5, Math.min(2.5, parseFloat(targetZoom.toFixed(2))));
+                        this.apply();
+                    }
+                    e.preventDefault();
+                }, { passive: false });
+
+                this.container.addEventListener('touchend', (e) => {
+                    this.isDragging = false;
+                    if (e.touches.length < 2) this.startDistance = 0;
+                });
+            }
+        }
+
+        /* ====================================================
+         * 3단계: Page Application Sandbox (도구들을 조합하여 구동)
+         * ==================================================== */
+        const App = {
+            SECURE_PASSWORD: "2026",
+            pdfDoc: null,
+            currentPage: 1,
+            engine: null,
+
+            // DOM 캐싱 구역
+            nodes: {},
+
+            init() {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+                
+                this.nodes = {
+                    canvas: document.getElementById('pdf-canvas'),
+                    wrapper: document.getElementById('canvas-wrapper'),
+                    container: document.getElementById('viewport'),
+                    pageInput: document.getElementById('page-input'),
+                    pageSlider: document.getElementById('page-slider'),
+                    totalPages: document.getElementById('total-pages'),
+                    downloadBtn: document.getElementById('download-btn'),
+                    fullscreenBtn: document.getElementById('fullscreen-toggle-btn'),
+                    ctx: document.getElementById('pdf-canvas').getContext('2d')
+                };
+
+                document.getElementById('password-input').focus();
+            } ,
+
+            checkPassword() {
+                const inputField = document.getElementById('password-input');
+                const errorMsg = document.getElementById('error-message');
+                const overlay = document.getElementById('gatekeeper-overlay');
+
+                if (inputField.value === this.SECURE_PASSWORD) {
+                    overlay.style.opacity = '0';
+                    overlay.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                        document.body.classList.add('unlocked');
+                        
+                        // 1단계 독립 엔진을 이 시점에 이 컴포넌트 쌍에 바인딩 (도구화의 핵심)
+                        this.engine = new ViewportInteractionEngine(this.nodes.container, this.nodes.wrapper);
+                        
+                        this.loadPortfolioPDF();
+                        this.initFullscreenListener();
+                    }, 400);
+                } else {
+                    errorMsg.style.display = 'block';
+                    inputField.value = '';
+                    inputField.focus();
+                }
+            },
+
+            async loadPortfolioPDF() {
+                const pdfUrl = "https://raw.githubusercontent.com/daywithmin/daywithmin.github.io/main/portfolio.pdf";
+                try {
+                    this.pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
+                    this.nodes.pageSlider.max = this.pdfDoc.numPages;
+                    await this.renderPage(1);
+                    this.nodes.downloadBtn.href = pdfUrl;
+                } catch (e) {
+                    console.error("PDF Loading Error: ", e);
+                    alert("포트폴리오 파일을 불러오지 못했습니다.");
+                }
+            },
+
+            async renderPage(num) {
+                if (!this.pdfDoc) return;
+                if (num < 1) num = 1;
+                if (num > this.pdfDoc.numPages) num = this.pdfDoc.numPages;
+
+                const page = await this.pdfDoc.getPage(num);
+                const isFull = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+                
+                const containerWidth = window.innerWidth - (isFull ? 20 : 64);
+                const containerHeight = window.innerHeight - (isFull ? 120 : 230); 
+
+                const unscaledViewport = page.getViewport({ scale: 1.0, rotation: page.rotate });
+                const optimalScale = Math.min(containerWidth / unscaledViewport.width, containerHeight / unscaledViewport.height);
+                const dpr = window.devicePixelRatio || 1;
+                const viewport = page.getViewport({ scale: optimalScale * dpr });
+
+                this.nodes.canvas.height = viewport.height;
+                this.nodes.canvas.width = viewport.width;
+                this.nodes.wrapper.style.width = `${viewport.width / dpr}px`;
+                this.nodes.wrapper.style.height = `${viewport.height / dpr}px`;
+
+                await page.render({ canvasContext: this.nodes.ctx, viewport: viewport }).promise;
+
+                this.currentPage = num;
+                this.nodes.pageInput.value = num;
+                this.nodes.pageSlider.value = num;
+                this.nodes.totalPages.textContent = String(this.pdfDoc.numPages).padStart(2, '0');
+                
+                // 드래그 상태 초기화는 엔진 역할을 대리 호출
+                if(this.engine) this.engine.reset();
+            },
+
+            goToPage(value) {
+                const pageNum = parseInt(value);
+                if (!isNaN(pageNum) && this.pdfDoc) {
+                    this.renderPage(pageNum);
+                } else {
+                    this.nodes.pageInput.value = this.currentPage;
+                    this.nodes.pageSlider.value = this.currentPage;
+                }
+            },
+
+            prevPage() { if (this.currentPage > 1) this.renderPage(this.currentPage - 1); },
+            nextPage() { if (this.pdfDoc && this.currentPage < this.pdfDoc.numPages) this.renderPage(this.currentPage + 1); },
+
+            toggleFullscreen() {
+                if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+                    const docElm = document.documentElement;
+                    if (docElm.requestFullscreen) docElm.requestFullscreen();
+                    else if (docElm.webkitRequestFullscreen) docElm.webkitRequestFullscreen();
+                    else if (docElm.msRequestFullscreen) docElm.msRequestFullscreen();
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                    else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                    else if (document.msExitFullscreen) document.msExitFullscreen();
+                }
+            },
+
+            initFullscreenListener() {
+                const changeEvents = ['fullscreenchange', 'webkitfullscreenchange', 'msfullscreenchange'];
+                changeEvents.forEach(evt => {
+                    document.addEventListener(evt, () => {
+                        const isFull = document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement;
+                        if (isFull) {
+                            document.body.classList.add('fullscreen-mode');
+                            this.nodes.fullscreenBtn.textContent = "Exit Fullscreen";
+                        } else {
+                            document.body.classList.remove('fullscreen-mode');
+                            this.nodes.fullscreenBtn.textContent = "Fullscreen";
+                        }
+                        if(this.pdfDoc) this.renderPage(this.currentPage);
+                    });
+                });
+            }
+        };
+
+        // 앱 트리거 실행
+        window.onload = () => App.init();
+
+        let resizeTimeout;
+        window.onresize = function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (App.pdfDoc && document.body.classList.contains('unlocked')) App.renderPage(App.currentPage);
+            }, 150);
+        };
+    </script>
+</body>
+</html>
